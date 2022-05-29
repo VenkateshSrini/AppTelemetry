@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  labels:
+    app: consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+        service: consumer
+    spec:
+      containers:
+        - name: consumer
+          image: sparrow46world/consumer4466:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: RabbitmqHost
+              value: rabbit
+            - name: JaegerHost
+              value: jaeger-udp
+            - name: ZipkinHost
+              value: zipkin
+            - name: MssqlHost
+              value: mssql-deployment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer
+  labels:
+    app: consumer
+    service: consumer
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 6006
+      targetPort: 80
+      protocol: TCP
+  selector:
+    service: consumer

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publisher
+  labels:
+    app: publisher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: publisher
+  template:
+    metadata:
+      labels:
+        app: publisher
+        service: publisher
+    spec:
+      containers:
+        - name: publisher
+          image: sparrow46world/publisher4646:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          env:
+            - name: ASPNETCORE_URLS
+              value: http://+:80
+            - name: RabbitmqHost
+              value: rabbit
+            - name: JaegerHost
+              value: jaeger-udp
+            - name: ZipkinHost
+              value: zipkin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher
+  labels:
+    app: publisher
+    service: publisher
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 4004
+      targetPort: 80
+      protocol: TCP
+  selector:
+    service: publisher
